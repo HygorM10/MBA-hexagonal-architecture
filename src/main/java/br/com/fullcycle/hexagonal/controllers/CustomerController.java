@@ -1,11 +1,18 @@
 package br.com.fullcycle.hexagonal.controllers;
 
+import br.com.fullcycle.hexagonal.application.exceptions.ValidationException;
+import br.com.fullcycle.hexagonal.application.usecases.CreateCustomerUseCase;
+import br.com.fullcycle.hexagonal.application.usecases.GetCustomerByIdUseCase;
 import br.com.fullcycle.hexagonal.dtos.CustomerDTO;
-import br.com.fullcycle.hexagonal.models.Customer;
 import br.com.fullcycle.hexagonal.services.CustomerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.net.URI;
 
@@ -18,30 +25,20 @@ public class CustomerController {
 
     @PostMapping
     public ResponseEntity<?> create(@RequestBody CustomerDTO dto) {
-        if (customerService.findByCpf(dto.getCpf()).isPresent()) {
-            return ResponseEntity.unprocessableEntity().body("Customer already exists");
+        try {
+            final var useCase = new CreateCustomerUseCase(customerService);
+            final var output = useCase.execute(new CreateCustomerUseCase.Input(dto.getCpf(), dto.getEmail(), dto.getName()));
+            return ResponseEntity.created(URI.create("/customers/" + output.id())).body(output);
+        } catch (ValidationException ex) {
+            return ResponseEntity.unprocessableEntity().body(ex.getMessage());
         }
-        if (customerService.findByEmail(dto.getEmail()).isPresent()) {
-            return ResponseEntity.unprocessableEntity().body("Customer already exists");
-        }
-
-        var customer = new Customer();
-        customer.setName(dto.getName());
-        customer.setCpf(dto.getCpf());
-        customer.setEmail(dto.getEmail());
-
-        customer = customerService.save(customer);
-
-        return ResponseEntity.created(URI.create("/customers/" + customer.getId())).body(customer);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<?> get(@PathVariable Long id) {
-        var customer = customerService.findById(id);
-        if (customer.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-
-        return ResponseEntity.ok(customer.get());
+        final var useCase = new GetCustomerByIdUseCase(customerService);
+        return useCase.execute(new GetCustomerByIdUseCase.Input(id))
+                .map(ResponseEntity::ok)
+                .orElseGet(ResponseEntity.notFound()::build);
     }
 }
