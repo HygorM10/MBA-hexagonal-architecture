@@ -1,7 +1,7 @@
 package br.com.fullcycle.hexagonal.infrastructure.graphql;
 
-import br.com.fullcycle.hexagonal.application.usecases.CreateEventUseCase;
-import br.com.fullcycle.hexagonal.application.usecases.SubscribeCustomerToEventUseCase;
+import br.com.fullcycle.hexagonal.application.usecases.event.CreateEventUseCase;
+import br.com.fullcycle.hexagonal.application.usecases.event.SubscribeCustomerToEventUseCase;
 import br.com.fullcycle.hexagonal.infrastructure.dtos.NewEventDTO;
 import br.com.fullcycle.hexagonal.infrastructure.dtos.SubscribeDTO;
 import org.springframework.graphql.data.method.annotation.Argument;
@@ -30,7 +30,7 @@ public class EventResolver {
     @Transactional
     @MutationMapping
     public SubscribeCustomerToEventUseCase.Output subscribeCustomerToEvent(@Argument SubscribeDTO input) {
-        return subscribeCustomerToEventUseCase.execute(new SubscribeCustomerToEventUseCase.Input(input.customerId(), input.eventId()));
+        return subscribeCustomerToEventUseCase.execute(new SubscribeCustomerToEventUseCase.Input(input.customerId().toString(), input.eventId().toString()));
     }
 
 }
