@@ -1,20 +1,16 @@
 package br.com.fullcycle.hexagonal.application.usecases.customer;
 
+import br.com.fullcycle.hexagonal.IntegrationTest;
+import br.com.fullcycle.hexagonal.application.domain.customer.Customer;
 import br.com.fullcycle.hexagonal.application.exceptions.ValidationException;
-import br.com.fullcycle.hexagonal.infrastructure.Main;
-import br.com.fullcycle.hexagonal.infrastructure.models.Customer;
-import br.com.fullcycle.hexagonal.infrastructure.repositories.CustomerRepository;
-import org.junit.jupiter.api.AfterEach;
+import br.com.fullcycle.hexagonal.application.repositories.CustomerRepository;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
 
-@ActiveProfiles("test")
-@SpringBootTest(classes = Main.class)
-public class CreateCustomerUseCaseIT {
+public class CreateCustomerUseCaseIT extends IntegrationTest {
 
     @Autowired
     private CreateCustomerUseCase useCase;
@@ -22,8 +18,8 @@ public class CreateCustomerUseCaseIT {
     @Autowired
     private CustomerRepository customerRepository;
 
-    @AfterEach
-    void tearDown() {
+    @BeforeEach
+    void setUp() {
         customerRepository.deleteAll();
     }
 
@@ -31,34 +27,34 @@ public class CreateCustomerUseCaseIT {
     @DisplayName("Deve criar um cliente")
     public void testCreateCustomer() {
         // given
-        final var exectedCpf = "12345678901";
-        final var exectedEmail = "john.doe@gmail.com";
-        final var exectedName = "John Doe";
+        final var expectedCPF = "123.456.789-01";
+        final var expectedEmail = "john.doe@gmail.com";
+        final var expectedName = "John Doe";
 
-        final var createInput = new CreateCustomerUseCase.Input(exectedCpf, exectedEmail, exectedName);
+        final var createInput = new CreateCustomerUseCase.Input(expectedCPF, expectedEmail, expectedName);
 
         // when
         final var output = useCase.execute(createInput);
 
         // then
         Assertions.assertNotNull(output.id());
-        Assertions.assertEquals(exectedCpf, output.cpf());
-        Assertions.assertEquals(exectedEmail, output.email());
-        Assertions.assertEquals(exectedName, output.name());
+        Assertions.assertEquals(expectedCPF, output.cpf());
+        Assertions.assertEquals(expectedEmail, output.email());
+        Assertions.assertEquals(expectedName, output.name());
     }
 
     @Test
     @DisplayName("Não deve cadastrar um cliente com CPF duplicado")
-    public void testCreateWithDuplicatedCPFShouldFail() {
+    public void testCreateWithDuplicatedCPFShouldFail() throws Exception {
         // given
-        final var exectedCpf = "12345678901";
-        final var exectedEmail = "john.doe@gmail.com";
-        final var exectedName = "John Doe";
+        final var expectedCPF = "123.456.789-01";
+        final var expectedEmail = "john.doe@gmail.com";
+        final var expectedName = "John Doe";
         final var expectedError = "Customer already exists";
 
-        createCustomer(exectedCpf, exectedEmail, exectedName);
+        createCustomer(expectedCPF, expectedEmail, expectedName);
 
-        final var createInput = new CreateCustomerUseCase.Input(exectedCpf, exectedEmail, exectedName);
+        final var createInput = new CreateCustomerUseCase.Input(expectedCPF, expectedEmail, expectedName);
 
         // when
         final var actualException = Assertions.assertThrows(ValidationException.class, () -> useCase.execute(createInput));
@@ -69,16 +65,16 @@ public class CreateCustomerUseCaseIT {
 
     @Test
     @DisplayName("Não deve cadastrar um cliente com e-mail duplicado")
-    public void testCreateWithDuplicatedEmailShouldFail() {
+    public void testCreateWithDuplicatedEmailShouldFail() throws Exception {
         // given
-        final var exectedCpf = "12345118901";
-        final var exectedEmail = "john.doe@gmail.com";
-        final var exectedName = "John Doe";
+        final var expectedCPF = "123.456.789-01";
+        final var expectedEmail = "john.doe@gmail.com";
+        final var expectedName = "John Doe";
         final var expectedError = "Customer already exists";
 
-        createCustomer("2234322443", exectedEmail, exectedName);
+        createCustomer("231.321.312-31", expectedEmail, expectedName);
 
-        final var createInput = new CreateCustomerUseCase.Input(exectedCpf, exectedEmail, exectedName);
+        final var createInput = new CreateCustomerUseCase.Input(expectedCPF, expectedEmail, expectedName);
 
         // when
         final var actualException = Assertions.assertThrows(ValidationException.class, () -> useCase.execute(createInput));
@@ -88,12 +84,6 @@ public class CreateCustomerUseCaseIT {
     }
 
     private Customer createCustomer(final String cpf, final String email, final String name) {
-        final var aCustomer = new Customer();
-        aCustomer.setCpf(cpf);
-        aCustomer.setEmail(email);
-        aCustomer.setName(name);
-
-        return customerRepository.save(aCustomer);
+        return customerRepository.create(Customer.newCustomer(name, cpf, email));
     }
-
 }

@@ -5,6 +5,8 @@ import br.com.fullcycle.hexagonal.application.domain.person.Email;
 import br.com.fullcycle.hexagonal.application.domain.person.Name;
 import br.com.fullcycle.hexagonal.application.exceptions.ValidationException;
 
+import java.util.Objects;
+
 public class Customer {
 
     private final CustomerId customerId;
@@ -43,6 +45,19 @@ public class Customer {
         return email;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Customer customer = (Customer) o;
+        return Objects.equals(customerId, customer.customerId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(customerId);
+    }
+
     private void setName(final String name) {
         this.name = new Name(name);
     }
@@ -54,4 +69,6 @@ public class Customer {
     private void setEmail(final String email) {
         this.email = new Email(email);
     }
+
+
 }

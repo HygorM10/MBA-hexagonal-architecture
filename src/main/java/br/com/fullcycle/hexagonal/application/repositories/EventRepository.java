@@ -13,4 +13,6 @@ public interface EventRepository {
 
     Event update(Event event);
 
+    void deleteAll();
+
 }

@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 
 import java.time.format.DateTimeFormatter;
 
-import static br.com.fullcycle.hexagonal.infrastructure.models.TicketStatus.PENDING;
+import static br.com.fullcycle.hexagonal.application.domain.event.ticket.TicketStatus.PENDING;
 
 public class EventTest {
 

@@ -19,14 +19,18 @@ import java.util.Objects;
 
 import static org.springframework.http.HttpStatus.CREATED;
 
+// Adapter
 @RestController
 @RequestMapping(value = "events")
 public class EventController {
 
-    public final CreateEventUseCase createEventUseCase;
-    public final SubscribeCustomerToEventUseCase subscribeCustomerToEventUseCase;
+    private final CreateEventUseCase createEventUseCase;
+    private final SubscribeCustomerToEventUseCase subscribeCustomerToEventUseCase;
 
-    public EventController(CreateEventUseCase createEventUseCase, SubscribeCustomerToEventUseCase subscribeCustomerToEventUseCase) {
+    public EventController(
+            final CreateEventUseCase createEventUseCase,
+            final SubscribeCustomerToEventUseCase subscribeCustomerToEventUseCase
+    ) {
         this.createEventUseCase = Objects.requireNonNull(createEventUseCase);
         this.subscribeCustomerToEventUseCase = Objects.requireNonNull(subscribeCustomerToEventUseCase);
     }
@@ -35,7 +39,9 @@ public class EventController {
     @ResponseStatus(CREATED)
     public ResponseEntity<?> create(@RequestBody NewEventDTO dto) {
         try {
-            final var output = createEventUseCase.execute(new CreateEventUseCase.Input(dto.date(), dto.name(), dto.partnerId(), dto.totalSpots()));
+            final var output =
+                    createEventUseCase.execute(new CreateEventUseCase.Input(dto.date(), dto.name(), dto.partnerId(), dto.totalSpots()));
+
             return ResponseEntity.created(URI.create("/events/" + output.id())).body(output);
         } catch (ValidationException ex) {
             return ResponseEntity.unprocessableEntity().body(ex.getMessage());
@@ -44,9 +50,11 @@ public class EventController {
 
     @Transactional
     @PostMapping(value = "/{id}/subscribe")
-    public ResponseEntity<?> subscribe(@PathVariable Long id, @RequestBody SubscribeDTO dto) {
+    public ResponseEntity<?> subscribe(@PathVariable String id, @RequestBody SubscribeDTO dto) {
         try {
-            final var output = subscribeCustomerToEventUseCase.execute(new SubscribeCustomerToEventUseCase.Input(dto.customerId().toString(), id.toString()));
+            final var output =
+                    subscribeCustomerToEventUseCase.execute(new SubscribeCustomerToEventUseCase.Input(dto.customerId(), id));
+
             return ResponseEntity.ok(output);
         } catch (ValidationException ex) {
             return ResponseEntity.unprocessableEntity().body(ex.getMessage());

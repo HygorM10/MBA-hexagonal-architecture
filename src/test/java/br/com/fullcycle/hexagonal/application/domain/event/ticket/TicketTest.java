@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import static br.com.fullcycle.hexagonal.infrastructure.models.TicketStatus.PENDING;
+import static br.com.fullcycle.hexagonal.application.domain.event.ticket.TicketStatus.PENDING;
 
 public class TicketTest {
 
